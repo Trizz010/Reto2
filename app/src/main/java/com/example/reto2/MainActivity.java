@@ -1,12 +1,17 @@
 package com.example.reto2;
 
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 
 import android.app.Notification;
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,13 +24,14 @@ public class MainActivity extends AppCompatActivity {
     private Context context;
     private EditText inputText;
     private View radioButtonView;
-    private NotificationManager myNotification;
+    private NotificationCompat.Builder myBuilder;
+    private NotificationManager myNotificationManager;
+//    @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         context = getApplicationContext();
-        myNotification = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
         dialogo1();
     }
     private void dialogo1(){
@@ -70,6 +76,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         conf2.setPositiveButton("Continue", new DialogInterface.OnClickListener() {
+//            @RequiresApi(api = Build.VERSION_CODES.O)
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 RadioGroup radioGroup = radioButtonView.findViewById(R.id.radioGroup);
@@ -84,17 +91,25 @@ public class MainActivity extends AppCompatActivity {
         AlertDialog dialog2 = conf2.create();
         dialog2.show();
     }
+//    @RequiresApi(api = Build.VERSION_CODES.O)
     private void notificacion(){
-        System.out.println("HOLA???");
-        Notification.Builder notifBuilder = new Notification.Builder(this);
-        notifBuilder.setSmallIcon(R.mipmap.ic_launcher);
+        NotificationChannel myChannel = new NotificationChannel("CHANNEL_ID", "CHANNEL_NAME", NotificationManager.IMPORTANCE_DEFAULT);
 
-        notifBuilder.setContentTitle(inputText.getText().toString());
         RadioGroup radioGroup = radioButtonView.findViewById(R.id.radioGroup);
         int id = radioGroup.getCheckedRadioButtonId();
         RadioButton selectedRB = radioButtonView.findViewById(id);
-        notifBuilder.setContentText(selectedRB.getText());
 
-        myNotification.notify(0, notifBuilder.build());
+        myBuilder = new NotificationCompat.Builder(getApplicationContext(), "CHANNEL_ID")
+                .setSmallIcon(R.mipmap.ic_launcher_round) // notification icon
+                .setContentTitle(inputText.getText().toString())
+                .setContentText(selectedRB.getText())
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setAutoCancel(true);
+
+        myNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        myNotificationManager.createNotificationChannel(myChannel);
+
+        myNotificationManager.notify(0, myBuilder.build());
+
     }
 }
